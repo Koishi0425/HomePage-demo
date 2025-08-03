@@ -1,0 +1,3 @@
+[submodule "client"]
+	path = client
+	url = git@github.com:Koishi0425/HomePage-submodule-demo.git
