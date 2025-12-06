@@ -46,6 +46,7 @@
         >
           <template #item="{ element }">
             <div 
+              v-if="element && element.id && element.type"
               class="canvas-component-wrapper" 
               :class="{ active: selectedId === element.id }"
               @click.stop="selectedId = element.id"
@@ -82,7 +83,9 @@ import {
   ImageComponent,
   VideoComponent,
   LinkComponent,
-  DividerComponent
+  DividerComponent,
+  RowLayoutComponent,
+  ColumnLayoutComponent
 } from './elements';
 
 const userStore = useUserStore();
@@ -90,17 +93,24 @@ const userStore = useUserStore();
 // Component Types
 const componentTypes = [
   { type: 'text', label: '文本', defaultProps: { content: '请输入文本', fontSize: 16, textAlign: 'left', color: '#000' } },
-  { type: 'image', label: '图片', defaultProps: { src: 'https://via.placeholder.com/300', width: '100%', borderRadius: 0 } },
-  { type: 'video', label: '视频', defaultProps: { src: '', width: '100%' } },
+  { type: 'image', label: '图片', defaultProps: { src: 'https://via.placeholder.com/300', width: '100%', borderRadius: 0, uploadType: 'url' } },
+  { type: 'video', label: '视频', defaultProps: { src: '', width: '100%', uploadType: 'url' } },
   { type: 'link', label: '超链接', defaultProps: { href: '#', text: '链接文本', color: '#409EFF', fontSize: 14, textAlign: 'left' } },
-  { type: 'divider', label: '分割线', defaultProps: { borderStyle: 'solid' } }
+  { type: 'divider', label: '分割线', defaultProps: { borderStyle: 'solid' } },
+  { type: 'rowLayout', label: '横向排列', defaultProps: { columns: [{ flex: 1, children: [] }, { flex: 1, children: [] }], gap: 10 } },
+  { type: 'columnLayout', label: '纵向排列', defaultProps: { rows: [{ flex: 1, children: [] }, { flex: 1, children: [] }], gap: 10 } }
 ];
 
 const templates = ref<any[]>([]);
 const canvasComponents = ref<any[]>([]);
 const selectedId = ref<string | null>(null);
 
-const selectedComponent = computed(() => canvasComponents.value.find(c => c.id === selectedId.value));
+// 过滤掉空元素
+const validCanvasComponents = computed(() => {
+  return canvasComponents.value.filter(comp => comp && comp.id && comp.type);
+});
+
+const selectedComponent = computed(() => validCanvasComponents.value.find(c => c.id === selectedId.value));
 
 const getComponent = (type: string) => {
   const map: any = {
@@ -108,7 +118,9 @@ const getComponent = (type: string) => {
     image: ImageComponent,
     video: VideoComponent,
     link: LinkComponent,
-    divider: DividerComponent
+    divider: DividerComponent,
+    rowLayout: RowLayoutComponent,
+    columnLayout: ColumnLayoutComponent
   };
   return map[type];
 };
@@ -122,11 +134,12 @@ const cloneComponent = (origin: any) => {
 };
 
 const handleCanvasChange = () => {
-  // Auto-save logic could go here
+  // 清理 null 值
+  canvasComponents.value = canvasComponents.value.filter(comp => comp && comp.id && comp.type);
 };
 
 const removeComponent = (id: string) => {
-  canvasComponents.value = canvasComponents.value.filter(c => c.id !== id);
+  canvasComponents.value = canvasComponents.value.filter(c => c && c.id !== id);
   if (selectedId.value === id) selectedId.value = null;
 };
 

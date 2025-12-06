@@ -2,7 +2,12 @@
   <div class="common-layout">
     <el-container>
       <el-header class="header">
-        <div class="logo" @click="$router.push('/')">Illustration Platform</div>
+        <div class="left-section">
+          <div class="logo" @click="$router.push('/')">Caia</div>
+          <el-button text @click="$router.push('/')">
+            <el-icon><HomeFilled /></el-icon>
+          </el-button>
+        </div>
         <div class="search-bar">
           <el-input v-model="searchKeyword" placeholder="搜索插画/作者" @keyup.enter="handleSearch">
             <template #append>
@@ -12,7 +17,9 @@
         </div>
         <div class="user-actions">
           <template v-if="userStore.token">
+            <el-button type="primary" plain @click="$router.push('/upload')">上传作品</el-button>
             <el-button type="primary" @click="$router.push('/editor')">制作主页</el-button>
+            <NotificationBell />
             <el-dropdown>
               <span class="el-dropdown-link">
                 <el-avatar :size="32" :src="userStore.user?.avatar_url || 'https://cube.elemecdn.com/3/7c/3ea6beec64369c2642b92c6726f1epng.png'" />
@@ -41,7 +48,9 @@
 <script setup lang="ts">
 import { ref } from 'vue';
 import { useRouter } from 'vue-router';
+import { HomeFilled } from '@element-plus/icons-vue';
 import { useUserStore } from './stores/user';
+import NotificationBell from './components/NotificationBell.vue';
 
 const router = useRouter();
 const userStore = useUserStore();
@@ -69,6 +78,11 @@ const handleLogout = () => {
   font-size: 20px;
   font-weight: bold;
   cursor: pointer;
+}
+.left-section {
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 .search-bar {
   width: 400px;

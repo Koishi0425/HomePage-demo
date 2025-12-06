@@ -1,7 +1,7 @@
-# 插画展示平台 (Illustration Platform)
+# Caia
 
 ## 项目简介
-这是一个基于 Vue3 + MongoDB 的插画展示平台，支持用户上传插画、制作个性化主页。
+这是一个基于 Vue3 + MongoDB 的插画展示平台 Caia，支持用户上传插画、制作个性化主页。
 
 ## 技术栈
 - **前端**: Vue 3, Vite, Element Plus, Pinia, Vue Draggable

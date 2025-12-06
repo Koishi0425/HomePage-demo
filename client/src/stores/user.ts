@@ -11,13 +11,27 @@ export const useUserStore = defineStore('user', () => {
     token.value = res.data.data.token;
     user.value = res.data.data.user;
     localStorage.setItem('token', token.value!);
+    localStorage.setItem('user', JSON.stringify(user.value));
   };
 
   const logout = () => {
     token.value = null;
     user.value = null;
     localStorage.removeItem('token');
+    localStorage.removeItem('user');
   };
 
-  return { user, token, login, logout };
+  const loadUser = () => {
+    const savedUser = localStorage.getItem('user');
+    if (savedUser) {
+      user.value = JSON.parse(savedUser);
+    }
+  };
+
+  // 初始化时加载用户信息
+  if (token.value && !user.value) {
+    loadUser();
+  }
+
+  return { user, token, login, logout, loadUser };
 });

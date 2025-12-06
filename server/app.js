@@ -3,13 +3,23 @@ const express = require('express');
 const mongoose = require('mongoose');
 const cors = require('cors');
 const path = require('path');
+const fs = require('fs');
 
 const authRoutes = require('./routes/auth');
 const illustrationRoutes = require('./routes/illustration');
 const homepageRoutes = require('./routes/homepage');
 const templateRoutes = require('./routes/template');
+const interactionRoutes = require('./routes/interaction');
+const notificationRoutes = require('./routes/notification');
 
 const app = express();
+
+// 确保 uploads 目录存在
+const uploadsDir = path.join(__dirname, 'uploads');
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+  console.log('Created uploads directory');
+}
 
 // Middleware
 app.use(cors());
@@ -26,6 +36,8 @@ app.use('/api/auth', authRoutes);
 app.use('/api/illustrations', illustrationRoutes);
 app.use('/api/homepage', homepageRoutes);
 app.use('/api/templates', templateRoutes);
+app.use('/api/interactions', interactionRoutes);
+app.use('/api/notifications', notificationRoutes);
 
 // Error Handling
 app.use((err, req, res, next) => {

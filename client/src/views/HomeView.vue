@@ -1,7 +1,13 @@
 <template>
   <div class="home-view">
+    <div v-if="searchKeyword" class="search-info">
+      搜索 "{{ searchKeyword }}" 的结果 {{ illustrations.length > 0 ? `(${illustrations.length}+ 条)` : '' }}
+    </div>
+    
     <div v-if="loading" class="loading">加载中...</div>
-    <div v-else-if="illustrations.length === 0" class="empty">暂无插画</div>
+    <div v-else-if="illustrations.length === 0" class="empty">
+      {{ searchKeyword ? `未找到与 "${searchKeyword}" 相关的内容` : '暂无插画' }}
+    </div>
     
     <div class="waterfall" v-else>
       <div 
@@ -39,20 +45,27 @@ const loading = ref(false);
 const loadingMore = ref(false);
 const page = ref(1);
 const hasMore = ref(true);
+const searchKeyword = ref('');
 
 const fetchIllustrations = async (reset = false) => {
   if (reset) {
     page.value = 1;
     illustrations.value = [];
     loading.value = true;
+    hasMore.value = true;
   } else {
     loadingMore.value = true;
   }
 
   try {
-    const endpoint = route.query.keyword 
-      ? `/illustrations/search?keyword=${route.query.keyword}`
-      : `/illustrations?page=${page.value}&limit=20`;
+    const keyword = route.query.keyword;
+    let endpoint;
+    
+    if (keyword) {
+      endpoint = `/illustrations/search?keyword=${encodeURIComponent(keyword)}&page=${page.value}&limit=20`;
+    } else {
+      endpoint = `/illustrations?page=${page.value}&limit=20`;
+    }
       
     const res = await api.get(endpoint);
     
@@ -74,8 +87,10 @@ const fetchIllustrations = async (reset = false) => {
 };
 
 const loadMore = () => {
-  page.value++;
-  fetchIllustrations();
+  if (!loadingMore.value && hasMore.value) {
+    page.value++;
+    fetchIllustrations();
+  }
 };
 
 const goToProfile = (userId: string) => {
@@ -83,15 +98,16 @@ const goToProfile = (userId: string) => {
 };
 
 const viewDetail = (item: any) => {
-  // Placeholder for detail view
-  console.log('View detail', item);
+  router.push(`/detail/${item._id}`);
 };
 
-watch(() => route.query.keyword, () => {
+watch(() => route.query.keyword, (newKeyword) => {
+  searchKeyword.value = newKeyword as string || '';
   fetchIllustrations(true);
 });
 
 onMounted(() => {
+  searchKeyword.value = route.query.keyword as string || '';
   fetchIllustrations(true);
 });
 </script>
@@ -99,6 +115,12 @@ onMounted(() => {
 <style scoped>
 .home-view {
   padding: 20px;
+}
+.search-info {
+  padding: 10px 0;
+  font-size: 16px;
+  color: #606266;
+  margin-bottom: 10px;
 }
 .waterfall {
   column-count: 4;

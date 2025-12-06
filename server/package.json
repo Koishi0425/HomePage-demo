@@ -1,5 +1,5 @@
 {
-  "name": "illustration-platform-server",
+  "name": "caia-server",
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {

@@ -2,7 +2,7 @@ version: '3.8'
 services:
   mongo:
     image: mongo:latest
-    container_name: illustration-mongo
+    container_name: caia-mongo
     ports:
       - "27017:27017"
     volumes:
@@ -13,7 +13,7 @@ services:
 
   backend:
     build: ./server
-    container_name: illustration-backend
+    container_name: caia-backend
     ports:
       - "3000:3000"
     environment:
@@ -26,7 +26,7 @@ services:
 
   frontend:
     build: ./client
-    container_name: illustration-frontend
+    container_name: caia-frontend
     ports:
       - "80:80"
     depends_on:

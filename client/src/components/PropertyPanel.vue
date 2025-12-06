@@ -25,9 +25,32 @@
 
       <!-- Image Properties -->
       <template v-if="component.type === 'image'">
-        <el-form-item label="图片链接">
-          <el-input v-model="component.props.src" />
+        <el-form-item label="上传方式">
+          <el-radio-group v-model="component.props.uploadType">
+            <el-radio-button label="url">URL链接</el-radio-button>
+            <el-radio-button label="upload">本地上传</el-radio-button>
+          </el-radio-group>
         </el-form-item>
+        
+        <el-form-item label="图片" v-if="component.props.uploadType === 'url'">
+          <el-input v-model="component.props.src" placeholder="输入图片URL" />
+        </el-form-item>
+        
+        <el-form-item label="上传图片" v-else>
+          <el-upload
+            action="/api/illustrations/upload"
+            name="image"
+            :headers="{ Authorization: `Bearer ${token}` }"
+            :on-success="(res) => handleUploadSuccess(res, 'image')"
+            :show-file-list="false"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload>
+          <div v-if="component.props.src" style="margin-top: 10px">
+            <img :src="component.props.src" style="max-width: 100px" />
+          </div>
+        </el-form-item>
+        
         <el-form-item label="宽度">
           <el-input v-model="component.props.width" placeholder="e.g. 100% or 300px" />
         </el-form-item>
@@ -38,9 +61,32 @@
 
       <!-- Video Properties -->
       <template v-if="component.type === 'video'">
-        <el-form-item label="视频链接">
-          <el-input v-model="component.props.src" />
+        <el-form-item label="上传方式">
+          <el-radio-group v-model="component.props.uploadType">
+            <el-radio-button label="url">URL链接</el-radio-button>
+            <el-radio-button label="upload">本地上传</el-radio-button>
+          </el-radio-group>
         </el-form-item>
+        
+        <el-form-item label="视频" v-if="component.props.uploadType === 'url'">
+          <el-input v-model="component.props.src" placeholder="输入视频URL" />
+        </el-form-item>
+        
+        <el-form-item label="上传视频" v-else>
+          <el-upload
+            action="/api/illustrations/upload"
+            name="image"
+            :headers="{ Authorization: `Bearer ${token}` }"
+            :on-success="(res) => handleUploadSuccess(res, 'video')"
+            :show-file-list="false"
+          >
+            <el-button size="small" type="primary">点击上传</el-button>
+          </el-upload>
+          <div v-if="component.props.src" style="margin-top: 10px; color: #67c23a">
+            已上传
+          </div>
+        </el-form-item>
+        
         <el-form-item label="宽度">
           <el-input v-model="component.props.width" />
         </el-form-item>
@@ -70,6 +116,36 @@
         </el-form-item>
       </template>
 
+      <!-- Row Layout Properties -->
+      <template v-if="component.type === 'rowLayout'">
+        <el-form-item label="列数">
+          <el-input-number 
+            :model-value="component.props.columns.length" 
+            :min="2" 
+            :max="4"
+            @change="updateColumns"
+          />
+        </el-form-item>
+        <el-form-item label="间距">
+          <el-slider v-model="component.props.gap" :max="50" />
+        </el-form-item>
+      </template>
+
+      <!-- Column Layout Properties -->
+      <template v-if="component.type === 'columnLayout'">
+        <el-form-item label="行数">
+          <el-input-number 
+            :model-value="component.props.rows.length" 
+            :min="2" 
+            :max="4"
+            @change="updateRows"
+          />
+        </el-form-item>
+        <el-form-item label="间距">
+          <el-slider v-model="component.props.gap" :max="50" />
+        </el-form-item>
+      </template>
+
     </el-form>
     <div v-else class="no-selection">
       请选择一个组件进行编辑
@@ -78,9 +154,43 @@
 </template>
 
 <script setup lang="ts">
-defineProps<{
+import { computed } from 'vue';
+
+const props = defineProps<{
   component: any;
 }>();
+
+const token = computed(() => localStorage.getItem('token'));
+
+const handleUploadSuccess = (res: any, type: 'image' | 'video') => {
+  if (props.component && res.data && res.data.image_url) {
+    props.component.props.src = res.data.image_url;
+  }
+};
+
+const updateColumns = (count: number) => {
+  if (!props.component) return;
+  const current = props.component.props.columns.length;
+  if (count > current) {
+    for (let i = current; i < count; i++) {
+      props.component.props.columns.push({ flex: 1, children: [] });
+    }
+  } else {
+    props.component.props.columns.splice(count);
+  }
+};
+
+const updateRows = (count: number) => {
+  if (!props.component) return;
+  const current = props.component.props.rows.length;
+  if (count > current) {
+    for (let i = current; i < count; i++) {
+      props.component.props.rows.push({ flex: 1, children: [] });
+    }
+  } else {
+    props.component.props.rows.splice(count);
+  }
+};
 </script>
 
 <style scoped>

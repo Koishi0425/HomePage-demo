@@ -64,6 +64,21 @@ router.post('/login', asyncHandler(async (req, res) => {
   }
 }));
 
+// 搜索用户
+router.get('/users/search', asyncHandler(async (req, res) => {
+  const { keyword } = req.query;
+  if (!keyword) return res.json({ code: 200, msg: 'success', data: [] });
+
+  const users = await User.find({
+    $or: [
+      { username: { $regex: keyword, $options: 'i' } },
+      { email: { $regex: keyword, $options: 'i' } }
+    ]
+  }).select('-password_hash').limit(20);
+
+  res.json({ code: 200, msg: 'success', data: users });
+}));
+
 router.get('/users/:userId', asyncHandler(async (req, res) => {
   const user = await User.findById(req.params.userId).select('-password_hash');
   if (!user) {
@@ -72,12 +87,27 @@ router.get('/users/:userId', asyncHandler(async (req, res) => {
   
   const homepage = await Homepage.findOne({ user_id: user._id, is_published: true });
   
+  // 获取统计数据
+  const Illustration = require('../models/Illustration');
+  const Follow = require('../models/Follow');
+  
+  const [illustrationCount, followingCount, followerCount] = await Promise.all([
+    Illustration.countDocuments({ user_id: user._id }),
+    Follow.countDocuments({ follower_id: user._id }),
+    Follow.countDocuments({ following_id: user._id })
+  ]);
+  
   res.json({
     code: 200,
     msg: 'success',
     data: {
       user,
-      homepage: homepage ? homepage.components_config : null
+      homepage: homepage ? homepage.components_config : null,
+      stats: {
+        illustrationCount,
+        followingCount,
+        followerCount
+      }
     }
   });
 }));

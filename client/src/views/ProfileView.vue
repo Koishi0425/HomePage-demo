@@ -9,6 +9,20 @@
         <div class="profile-info">
           <h1>{{ user.username }}</h1>
           <p>{{ user.email }}</p>
+          <div class="stats">
+            <div class="stat-item">
+              <strong>{{ stats.illustrationCount }}</strong>
+              <span>作品</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ stats.followingCount }}</strong>
+              <span>关注</span>
+            </div>
+            <div class="stat-item">
+              <strong>{{ stats.followerCount }}</strong>
+              <span>粉丝</span>
+            </div>
+          </div>
         </div>
       </div>
 
@@ -42,12 +56,15 @@ import {
   ImageComponent,
   VideoComponent,
   LinkComponent,
-  DividerComponent
+  DividerComponent,
+  RowLayoutComponent,
+  ColumnLayoutComponent
 } from '../components/elements';
 
 const route = useRoute();
 const user = ref<any>(null);
 const components = ref<any[]>([]);
+const stats = ref({ illustrationCount: 0, followingCount: 0, followerCount: 0 });
 const loading = ref(true);
 
 const getComponent = (type: string) => {
@@ -56,7 +73,9 @@ const getComponent = (type: string) => {
     image: ImageComponent,
     video: VideoComponent,
     link: LinkComponent,
-    divider: DividerComponent
+    divider: DividerComponent,
+    rowLayout: RowLayoutComponent,
+    columnLayout: ColumnLayoutComponent
   };
   return map[type];
 };
@@ -65,6 +84,7 @@ const fetchProfile = async () => {
   try {
     const res = await api.get(`/auth/users/${route.params.userId}`);
     user.value = res.data.data.user;
+    stats.value = res.data.data.stats || { illustrationCount: 0, followingCount: 0, followerCount: 0 };
     if (res.data.data.homepage && res.data.data.homepage.components) {
       components.value = res.data.data.homepage.components;
     }
@@ -99,6 +119,25 @@ onMounted(() => {
 .profile-info p {
   margin: 0;
   color: #666;
+}
+.stats {
+  display: flex;
+  gap: 30px;
+  margin-top: 15px;
+}
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.stat-item strong {
+  font-size: 20px;
+  color: #303133;
+}
+.stat-item span {
+  font-size: 12px;
+  color: #909399;
+  margin-top: 4px;
 }
 .rendered-component {
   margin-bottom: 10px;
